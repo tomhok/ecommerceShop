@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }} - Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .review-card {
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .review-content {
+            padding: 1rem;
+        }
+        .review-footer {
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .merchant-reply {
+            margin-left: 2rem;
+            margin-top: 1rem;
+            border-left: 3px solid #007bff;
+            padding-left: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #e9ecef;
+            border-radius: 0 8px 0 0;
+        }
+
+        .reply-content {
+            padding: 1rem;
+        }
+
+        .reply-footer {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <header class="my-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <a href="{{ url_for('index') }}" class="btn btn-link">Shop</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% elif current_user.role == 'merchant' %}
+                        <a href="{{ url_for('merchant_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <nav>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cart') }}">
+                            Cart (<span id="cart-count">{{ session.get('cart', {})|length }}</span>)
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-6">
+                {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid">
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <h1>{{ product.name }}</h1>
+                <p class="lead">${{ "%.2f"|format(product.price) }}</p>
+                <p>{{ product.description }}</p>
+                
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" class="mb-4">
+                    <div class="form-group">
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock_count }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                </form>
+            </div>
+        </div>
+
+        <section class="reviews mt-5">
+            {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                <h2>Customer Reviews</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Write a Review</h5>
+                        <form action="{{ url_for('add_review', product_id=product.id) }}" method="POST">
+                            <div class="form-group">
+                                <textarea class="form-control" name="content" rows="3" required 
+                                        placeholder="Share your experience with this product..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            {% elif current_user.is_authenticated and current_user.role == 'merchant' and product.merchant_id == current_user.id %}
+                <h2>Product Reviews & Replies</h2>
+            {% else %}
+                <h2>Product Reviews</h2>
+            {% endif %}
+
+            <!-- Display reviews and replies - single unified section -->
+            {% for review in product.reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <strong>{{ review.commenter.email }}</strong>
+                        {% if current_user.id == review.commenter_id or current_user.role == 'admin' %}
+                            <div>
+                                <button class="btn btn-sm btn-warning edit-review-btn" 
+                                        data-review-id="{{ review.id }}">Edit</button>
+                                <a href="{{ url_for('delete_review', review_id=review.id) }}" 
+                                   class="btn btn-sm btn-danger delete-review-btn"
+                                   data-review-id="{{ review.id }}">Delete</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="review-content" id="review-content-{{ review.id }}">
+                        {{ review.content }}
+                    </div>
+                    <div class="review-footer">
+                        Posted on {{ review.posted.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+
+                    {% if current_user.is_authenticated and current_user.role == 'merchant' and product.merchant_id == current_user.id %}
+                        <!-- Merchant reply form -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Reply to this review</h6>
+                                <form action="{{ url_for('add_merchant_reply', product_id=product.id, review_id=review.id) }}" method="POST">
+                                    <div class="form-group">
+                                        <textarea class="form-control" name="content" rows="2" required 
+                                                placeholder="Write your response..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Show merchant replies -->
+                    {% if review.merchant_replies %}
+                        {% for reply in review.merchant_replies %}
+                            <div class="merchant-reply">
+                                <div class="reply-header">
+                                    <strong>Merchant Response</strong>
+                                    {% if current_user.id == reply.merchant_id %}
+                                        <div>
+                                            <button class="btn btn-sm btn-warning edit-reply-btn" 
+                                                    data-reply-id="{{ reply.id }}">Edit</button>
+                                            <a href="{{ url_for('delete_merchant_reply', reply_id=reply.id) }}" 
+                                               class="btn btn-sm btn-danger delete-reply-btn"
+                                               data-reply-id="{{ reply.id }}">Delete</a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="reply-content" id="reply-content-{{ reply.id }}">
+                                    {{ reply.content }}
+                                </div>
+                                <div class="reply-footer">
+                                    Replied on {{ reply.posted.strftime('%Y-%m-%d %H:%M') }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-muted">No reviews yet. Be the first to review this product!</p>
+            {% endfor %}
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle edit button clicks
+            document.querySelectorAll('.edit-review-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const reviewId = this.dataset.reviewId;
+                    editReview(reviewId);
+                });
+            });
+
+            // Handle delete button clicks
+            document.querySelectorAll('.delete-review-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('Are you sure you want to delete this review?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Handle edit reply button clicks
+            document.querySelectorAll('.edit-reply-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const replyId = this.dataset.replyId;
+                    editReply(replyId);
+                });
+            });
+
+            // Handle delete reply button clicks
+            document.querySelectorAll('.delete-reply-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('Are you sure you want to delete this reply?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+
+        function editReview(reviewId) {
+            const contentDiv = document.getElementById(`review-content-${reviewId}`);
+            const content = contentDiv.textContent.trim();
+            
+            contentDiv.innerHTML = `
+                <form action="/review/${reviewId}/edit" method="POST">
+                    <div class="form-group">
+                        <textarea class="form-control" name="content" rows="3" required>${content}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary cancel-edit-btn" data-review-id="${reviewId}" data-content="${content}">Cancel</button>
+                </form>
+            `;
+
+            // Add event listener for the cancel button
+            contentDiv.querySelector('.cancel-edit-btn').addEventListener('click', function() {
+                cancelEdit(this.dataset.reviewId, this.dataset.content);
+            });
+        }
+
+        function cancelEdit(reviewId, content) {
+            const contentDiv = document.getElementById(`review-content-${reviewId}`);
+            contentDiv.textContent = content;
+        }
+
+        function editReply(replyId) {
+            const contentDiv = document.getElementById(`reply-content-${replyId}`);
+            const content = contentDiv.textContent.trim();
+            
+            contentDiv.innerHTML = `
+                <form action="/merchant-reply/${replyId}/edit" method="POST">
+                    <div class="form-group">
+                        <textarea class="form-control" name="content" rows="2" required>${content}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                    <button type="button" class="btn btn-secondary btn-sm cancel-reply-edit-btn" 
+                            data-reply-id="${replyId}" 
+                            data-content="${content}">Cancel</button>
+                </form>
+            `;
+
+            // Add event listener for the cancel button
+            contentDiv.querySelector('.cancel-reply-edit-btn').addEventListener('click', function() {
+                cancelReplyEdit(this.dataset.replyId, this.dataset.content);
+            });
+        }
+
+        function cancelReplyEdit(replyId, content) {
+            const contentDiv = document.getElementById(`reply-content-${replyId}`);
+            contentDiv.textContent = content;
+        }
+    </script>
+    {% include 'chat_widget.html' %}
+</body>
+</html> 

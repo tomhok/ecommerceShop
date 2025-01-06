@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="my-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <a href="{{ url_for('index') }}" class="btn btn-link">Shop</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% elif current_user.role == 'merchant' %}
+                        <a href="{{ url_for('merchant_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <nav>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cart') }}">
+                            Cart (<span id="cart-count">{{ session.get('cart', {})|length }}</span>)
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <div class="card my-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1 class="text-success">🎉 Order Successful! 🎉</h1>
+                    <h4>Order ID: {{ order_id }}</h4>
+                </div>
+
+                <div class="alert alert-info">
+                    A receipt has been sent to your email: {{ user_email }}
+                </div>
+
+                <h5>Order Details:</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>${{ "%.2f"|format(item.product.price) }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Grand Total:</strong></td>
+                            <td><strong>${{ "%.2f"|format(total_price) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="mt-3">
+                    <p><strong>Payment Method:</strong> {{ payment_method|title }}</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'chat_widget.html' %}
+</body>
+</html> 

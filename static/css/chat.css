@@ -1,0 +1,127 @@
+#chat-widget-styles {
+    display: none;
+}
+
+#chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 350px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+#chat-widget.minimized {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#chat-widget .chat-header {
+    background: #0084ff;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chat-widget.minimized .chat-header {
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+#chat-widget .chat-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+#chat-widget.minimized .chat-title {
+    display: block;
+}
+
+#chat-widget.minimized .fa-minus {
+    display: none;
+}
+
+#chat-widget .fa-comment-dots {
+    margin-left: 15px;
+    margin-right: 10px;
+}
+
+#chat-widget.minimized .fa-comment-dots {
+    display: inline-block;
+}
+
+#chat-widget:not(.minimized) .fa-comment-dots {
+    display: none;
+}
+
+#chat-widget .fa-minus {
+    display: none;
+}
+
+#chat-widget:not(.minimized) .fa-minus {
+    display: inline-block;
+}
+
+#chat-widget.minimized .fa-minus {
+    display: none;
+}
+
+#chat-widget .chat-input-container {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background: white;
+    border-radius: 0 0 10px 10px;
+    width: 100%;
+}
+
+#chat-widget .chat-input-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+#chat-widget .chat-input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 15px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    width: 100%;
+    min-width: 0; /* Prevents input from overflowing */
+}
+
+#chat-widget .chat-input:focus {
+    border-color: #0084ff;
+}
+
+#chat-widget .send-button {
+    background: #0084ff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* Prevents button from shrinking */
+}
+
+/* Rest of the CSS with #chat-widget prefix */ 

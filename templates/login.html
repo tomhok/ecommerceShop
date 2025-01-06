@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="my-4 d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('index') }}" class="btn btn-link">Shop</a>
+            <nav>
+                <ul class="nav">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('cart') }}">Cart</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <h1 class="my-4">Login</h1>
+        
+        {% if error %}
+            <div class="alert alert-warning" role="alert">
+                Incorrect email or password. Please try again.
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login', next=next) }}">
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <a href="{{ url_for('register') }}" class="btn btn-link">Don't have an account? Register here</a>
+        </form>
+    </div>
+</body>
+</html>

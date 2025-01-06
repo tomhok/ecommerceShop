@@ -1,0 +1,130 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<div id="chat-widget" class="chat-widget minimized">
+    <div class="chat-header" onclick="toggleChat()">
+        <div class="chat-title">
+            {% if current_user.role == 'admin' %}
+                Chat with Customer
+            {% else %}
+                Chat with Support
+            {% endif %}
+        </div>
+        <i class="fas fa-comment-dots"></i>
+        <i class="fas fa-minus"></i>
+    </div>
+    <div class="chat-body" style="display: none;">
+        <div id="chat-messages">
+            <!-- Messages will be dynamically added here -->
+        </div>
+    </div>
+    <div class="chat-input-container" style="display: none;">
+        <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="message-input" 
+                   placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Socket.IO
+    const socket = io();
+    let isMinimized = true;
+
+    socket.on('connect', function() {
+        console.log('Connected to chat server');
+    });
+
+    socket.on('message', function(data) {
+        addMessageToChat(data.message, data.user === '{{ current_user.email }}' ? 'sent' : 'received');
+    });
+
+    window.toggleChat = function() {
+        const chatWidget = document.getElementById('chat-widget');
+        const chatBody = document.querySelector('.chat-body');
+        const chatInput = document.querySelector('.chat-input-container');
+        
+        isMinimized = !isMinimized;
+        
+        if (isMinimized) {
+            chatWidget.classList.add('minimized');
+            chatBody.style.display = 'none';
+            chatInput.style.display = 'none';
+        } else {
+            chatWidget.classList.remove('minimized');
+            chatBody.style.display = 'flex';
+            chatInput.style.display = 'block';
+            loadMessages();
+            document.getElementById('message-input').focus();
+        }
+    };
+
+    window.handleKeyPress = function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    };
+
+    window.sendMessage = function() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        
+        if (message) {
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    room: '{{ "admin" if current_user.role != "admin" else "" }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    socket.emit('message', {
+                        message: message,
+                        room: '{{ "admin" if current_user.role != "admin" else "" }}'
+                    });
+                    addMessageToChat(message, 'sent');
+                    input.value = '';
+                }
+            });
+        }
+    };
+
+    window.loadMessages = function() {
+        fetch('/get_messages')
+            .then(response => response.json())
+            .then(data => {
+                const chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML = '';
+                data.messages.forEach(msg => {
+                    addMessageToChat(msg.content, msg.type);
+                });
+                scrollToBottom();
+            });
+    };
+
+    function addMessageToChat(message, type) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+</script> 

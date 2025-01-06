@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="my-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <a href="{{ url_for('index') }}" class="btn btn-link">Shop</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% elif current_user.role == 'merchant' %}
+                        <a href="{{ url_for('merchant_dashboard') }}" class="btn btn-link">Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <nav>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cart') }}">
+                            Cart (<span id="cart-count">{{ session.get('cart', {})|length }}</span>)
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <h1 class="my-4">Checkout</h1>
+        <h3>Total: ${{ "%.2f"|format(total_price) }}</h3>
+        <form action="{{ url_for('process_payment') }}" method="POST">
+            <div class="form-group">
+                <label for="paymentMethod">Select Payment Method</label>
+                <select class="form-control" id="paymentMethod" name="payment_method" required>
+                    <option value="grab">Grab</option>
+                    <option value="shopeepay">ShopeePay</option>
+                    <option value="paynow">PayNow</option>
+                    <option value="mastercard">Mastercard</option>
+                    <option value="visacard">Visa</option>
+                    <!-- Add more payment options as needed -->
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Pay Now</button>
+        </form>
+    </div>
+    {% include 'chat_widget.html' %}
+</body>
+</html> 
