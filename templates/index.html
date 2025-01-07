@@ -60,7 +60,12 @@
                                 <p class="card-text">{{ product.description }}</p>
                                 <p class="card-text">
                                     <strong>Price:</strong> {{ product.price|currency }}
-                                    {% if product.stock_count <= 10 %}
+                                    {% if product.stock_count = 0 %}
+                                        <br>
+                                        <span class="text-danger">
+                                            <strong>No more stock!</strong>
+                                        </span>
+                                    {% elif product.stock_count <= 10 %}
                                         <br>
                                         <span class="text-danger">
                                             <strong>Only {{ product.stock_count }} left in stock!</strong>
@@ -80,7 +85,7 @@
                                 <button class="btn btn-primary add-to-cart" 
                                         data-product-id="{{ product.id }}"
                                         {% if product.stock_count < 1 %}disabled{% endif %}>
-                                    {% if product.stock_count < 1 %}Out of Stock{% else %}Add to Cart{% endif %}
+                                    Add to Cart
                                 </button>
                                 <span class="fade-message" id="message-{{ product.id }}" style="display: none;">Added!</span>
                             </div>
