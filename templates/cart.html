@@ -51,14 +51,14 @@
                     {% for item in cart_items %}
                         <tr>
                             <td>{{ item.product.name }}</td>
-                            <td>${{ ":,.2f"|format(item.product.price) }}</td>
+                            <td>{{ item.product.price|currency }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('update_cart', product_id=item.product.id) }}" class="d-flex align-items-center">
                                     <input type="number" name="quantity" value="{{ item.quantity }}" min="0" class="form-control" style="width: 80px; margin-right: 5px;">
                                     <button type="submit" class="btn btn-sm btn-secondary">Update</button>
                                 </form>
                             </td>
-                            <td>${{ ":,.2f"|format(item.product.price * item.quantity) }}</td>
+                            <td>{{ (item.product.price * item.quantity)|currency }}</td>
                             <td>
                                 <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm btn-danger">Remove</a>
                             </td>
@@ -66,7 +66,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <h3>Total: ${{ ":,.2f"|format(total_price) }}</h3>
+            <h3>Total: {{ total_price|currency }}</h3>
             <a href="{{ url_for('checkout') }}" class="btn btn-primary">Proceed to Checkout</a>
         {% else %}
             <p>Your cart is empty.</p>

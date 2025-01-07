@@ -10,7 +10,6 @@ import hashlib
 import os
 import json
 import uuid
-import requests
 
 app = Flask(__name__)
 
@@ -39,6 +38,11 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # Specify the login view
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
+
+# Add this after creating the Flask app
+@app.template_filter('currency')
+def currency_filter(value):
+    return "${:,.2f}".format(float(value))
 
 # Models
 class User(UserMixin, db.Model):
@@ -690,7 +694,6 @@ def webhook():
 @app.route('/product/<int:product_id>/review', methods=['POST'])
 @login_required
 def add_review(product_id):
-    product = Product.query.get_or_404(product_id)
     content = request.form.get('content')
     
     if not content:
@@ -769,7 +772,6 @@ def add_merchant_reply(product_id, review_id):
         flash('Only merchants can reply to reviews.', 'error')
         return redirect(url_for('view_product', product_id=product_id))
     
-    review = Review.query.get_or_404(review_id)
     product = Product.query.get_or_404(product_id)
     
     if product.merchant_id != current_user.id:

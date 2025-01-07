@@ -59,7 +59,7 @@
                             <div class="card-body">
                                 <p class="card-text">{{ product.description }}</p>
                                 <p class="card-text">
-                                    <strong>Price:</strong> ${{ ":,.2f"|format(product.price) }}<br>
+                                    <strong>Price:</strong> {{ product.price|currency }}<br>
                                     <strong>Stock:</strong> <span id="stock-{{ product.id }}">{{ product.stock_count }}</span> items left
                                 </p>
                                 <div class="form-group">

@@ -7,6 +7,7 @@
 - Complete purchases
 - View order history
 - Chat with merchants
+- Give product reviews
 
 ### Merchant
 - Register/login as a merchant
@@ -14,13 +15,12 @@
 - Process customer orders
 - Communicate with customers
 - Track sales
+- Reply to product reviews
 
 ### Administrator
-- Manage user accounts
-- Monitor transactions
-- Oversee product listings
-- Manage user roles
+- Manage user accounts and roles
 - System administration
+- Provide chat support
 
 ## Security
 
