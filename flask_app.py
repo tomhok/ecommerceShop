@@ -556,8 +556,9 @@ def update_cart(product_id):
                 flash('Product not found!', 'error')
                 return redirect(url_for('cart'))
                 
+            # Check if requested quantity exceeds available stock
             if product.stock_count < quantity:
-                flash('Not enough stock available!', 'error')
+                flash(f'Only {product.stock_count} items available in stock!', 'error')
                 return redirect(url_for('cart'))
                 
             if product_id_str in cart:

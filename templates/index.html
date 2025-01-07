@@ -59,8 +59,13 @@
                             <div class="card-body">
                                 <p class="card-text">{{ product.description }}</p>
                                 <p class="card-text">
-                                    <strong>Price:</strong> {{ product.price|currency }}<br>
-                                    <strong>Stock:</strong> <span id="stock-{{ product.id }}">{{ product.stock_count }}</span> items left
+                                    <strong>Price:</strong> {{ product.price|currency }}
+                                    {% if product.stock_count <= 10 %}
+                                        <br>
+                                        <span class="text-danger">
+                                            <strong>Only {{ product.stock_count }} left in stock!</strong>
+                                        </span>
+                                    {% endif %}
                                 </p>
                                 <div class="form-group">
                                     <label for="quantity-{{ product.id }}">Quantity:</label>
@@ -69,7 +74,8 @@
                                            id="quantity-{{ product.id }}" 
                                            value="1" 
                                            min="1" 
-                                           max="{{ product.stock_count }}">
+                                           max="{{ product.stock_count }}"
+                                           {% if product.stock_count < 1 %}disabled{% endif %}>
                                 </div>
                                 <button class="btn btn-primary add-to-cart" 
                                         data-product-id="{{ product.id }}"
