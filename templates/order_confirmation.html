@@ -60,16 +60,16 @@
                         {% for item in order_items %}
                             <tr>
                                 <td>{{ item.product.name }}</td>
-                                <td>${{ "%.2f"|format(item.product.price) }}</td>
+                                <td>${{ ":,.2f"|format(item.product.price) }}</td>
                                 <td>{{ item.quantity }}</td>
-                                <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                                <td>${{ ":,.2f"|format(item.product.price * item.quantity) }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3" class="text-right"><strong>Grand Total:</strong></td>
-                            <td><strong>${{ "%.2f"|format(total_price) }}</strong></td>
+                            <td><strong>${{ ":,.2f"|format(total_price) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>

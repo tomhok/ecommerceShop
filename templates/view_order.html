@@ -42,7 +42,7 @@
                 <p class="card-text">
                     <strong>Customer:</strong> {{ order.user.email }}<br>
                     <strong>Date:</strong> {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
-                    <strong>Total Amount:</strong> ${{ "%.2f"|format(order.total_amount) }}
+                    <strong>Total Amount:</strong> ${{ ":,.2f"|format(order.total_amount) }}
                 </p>
 
                 <h6>Order Items:</h6>
@@ -60,9 +60,9 @@
                             {% if current_user.role == 'admin' or item.product.merchant_id == current_user.id %}
                                 <tr>
                                     <td>{{ item.product.name }}</td>
-                                    <td>${{ "%.2f"|format(item.price) }}</td>
+                                    <td>${{ ":,.2f"|format(item.price) }}</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                                    <td>${{ ":,.2f"|format(item.price * item.quantity) }}</td>
                                 </tr>
                             {% endif %}
                         {% endfor %}

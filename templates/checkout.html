@@ -36,7 +36,7 @@
         </header>
 
         <h1 class="my-4">Checkout</h1>
-        <h3>Total: ${{ "%.2f"|format(total_price) }}</h3>
+        <h3>Total: ${{ ":,.2f"|format(total_price) }}</h3>
         <form action="{{ url_for('process_payment') }}" method="POST">
             <div class="form-group">
                 <label for="paymentMethod">Select Payment Method</label>

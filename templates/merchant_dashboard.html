@@ -133,11 +133,11 @@
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>${{ "%.2f"|format(total_earnings|default(0)) }}</h3>
+                    <h3>${{ ":,.2f"|format(total_earnings|default(0)) }}</h3>
                     <p>Total Earnings</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${{ "%.2f"|format(average_order_value|default(0)) }}</h3>
+                    <h3>${{ ":,.2f"|format(average_order_value|default(0)) }}</h3>
                     <p>Avg. Order Value</p>
                 </div>
                 <div class="stat-card">
@@ -170,7 +170,7 @@
                         <td>#{{ order.id }}</td>
                         <td>{{ order.user.email }}</td>
                         <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>${{ ":,.2f"|format(order.total_amount) }}</td>
                         <td>
                             <a href="{{ url_for('view_order', order_id=order.id) }}" class="btn btn-sm btn-info">View</a>
                         </td>
@@ -210,7 +210,7 @@
                     {% for product in products %}
                     <tr>
                         <td>{{ product.name }}</td>
-                        <td>${{ "%.2f"|format(product.price) }}</td>
+                        <td>${{ ":,.2f"|format(product.price) }}</td>
                         <td>
                             {% if product.stock_count <= 20 %}
                                 <div class="stock-level stock-critical">
