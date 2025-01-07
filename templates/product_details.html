@@ -110,7 +110,7 @@
                             {% if product.stock_count < 1 %}disabled{% endif %}>
                         Add to Cart
                     </button>
-                    {% if product.stock_count = 0 %}
+                    {% if product.stock_count == 0 %}
                         <span class="text-danger ml-2">
                             <strong>No more stock!</strong>
                         </span>

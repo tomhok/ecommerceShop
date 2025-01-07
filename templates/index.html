@@ -60,7 +60,7 @@
                                 <p class="card-text">{{ product.description }}</p>
                                 <p class="card-text">
                                     <strong>Price:</strong> {{ product.price|currency }}
-                                    {% if product.stock_count = 0 %}
+                                    {% if product.stock_count == 0 %}
                                         <br>
                                         <span class="text-danger">
                                             <strong>No more stock!</strong>
