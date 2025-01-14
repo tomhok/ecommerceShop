@@ -5,14 +5,6 @@
     <title>Welcome to Shop</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <style>
-        .fade-message {
-            display: inline-block;
-            margin-left: 10px;
-            color: green;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -59,35 +51,30 @@
                             <div class="card-body">
                                 <p class="card-text">{{ product.description }}</p>
                                 <p class="card-text">
-                                    <strong>Price:</strong> {{ product.price|currency }}
-                                    {% if product.stock_count == 0 %}
-                                        <br>
-                                        <span class="text-danger">
-                                            <strong>No more stock!</strong>
-                                        </span>
-                                    {% elif product.stock_count <= 10 %}
-                                        <br>
-                                        <span class="text-danger">
-                                            <strong>Only {{ product.stock_count }} left in stock!</strong>
-                                        </span>
-                                    {% endif %}
+                                    <br><br><strong>Price:</strong> {{ product.price|currency }}
                                 </p>
                                 <div class="form-group">
                                     <label for="quantity-{{ product.id }}">Quantity:</label>
-                                    <input type="number" 
-                                           class="form-control quantity-input" 
-                                           id="quantity-{{ product.id }}" 
-                                           value="1" 
-                                           min="1" 
+                                    <input type="number"
+                                           class="form-control quantity-input"
+                                           id="quantity-{{ product.id }}"
+                                           value="1"
+                                           min="1"
                                            max="{{ product.stock_count }}"
                                            {% if product.stock_count < 1 %}disabled{% endif %}>
                                 </div>
-                                <button class="btn btn-primary add-to-cart" 
+                                <button class="btn btn-primary add-to-cart"
                                         data-product-id="{{ product.id }}"
                                         {% if product.stock_count < 1 %}disabled{% endif %}>
                                     Add to Cart
                                 </button>
-                                <span class="fade-message" id="message-{{ product.id }}" style="display: none;">Added!</span>
+                                <span style="color: red;" id="message-{{ product.id }}">
+                                    {% if product.stock_count == 0 %}
+                                        <strong>No more stock!</strong>
+                                    {% elif product.stock_count <= 10 %}
+                                        <strong>Only {{ product.stock_count }} left!</strong>
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -96,43 +83,54 @@
         </section>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            $('.add-to-cart').click(function() {
-                var productId = $(this).data('product-id');
-                var quantity = $('#quantity-' + productId).val();
-                
-                $.ajax({
-                    url: '/add_to_cart/' + productId,
-                    type: 'POST',
-                    data: {
-                        quantity: quantity
-                    },
-                    success: function(response) {
-                        // Update cart count with total quantity
-                        $('#cart-count').text(response.total_quantity);
-                        
-                        // Update stock count
-                        $('#stock-' + productId).text(response.stock_left);
-                        
-                        // Disable button if out of stock
-                        if (response.stock_left < 1) {
-                            $('button[data-product-id="' + productId + '"]')
-                                .prop('disabled', true)
-                                .text('Out of Stock');
-                        }
-                        
-                        // Show "Added!" message
-                        var message = $('#message-' + productId);
-                        message.fadeIn().delay(3000).fadeOut();
-                    },
-                    error: function(response) {
-                        alert(response.responseJSON.error);
+<script>
+    $(document).ready(function() {
+        $('.add-to-cart').click(function() {
+            var productId = $(this).data('product-id');
+            var quantity = $('#quantity-' + productId).val();
+
+            $.ajax({
+                url: '/add_to_cart/' + productId,
+                type: 'POST',
+                data: {
+                    quantity: quantity
+                },
+                success: function(response) {
+                    // Update cart count with total quantity
+                    $('#cart-count').text(response.total_quantity);
+
+                    // Update stock count
+                    $('#stock-' + productId).text(response.stock_left);
+
+                    // Disable button if out of stock
+                    if (response.stock_left < 1) {
+                        $('button[data-product-id="' + productId + '"]')
+                            .prop('disabled', true);
                     }
-                });
+
+                    var message = $('#message-' + productId);
+                    // Show "Added!" message in green
+                    message.html('<strong>Added!</strong>').css('color', 'green');
+
+                    // After 2 seconds, revert to stock message
+                    setTimeout(function() {
+                        message.html('').css('color', 'red');
+                        if (response.stock_left === 0) {
+                            message.html('<strong>No more stock!</strong>');
+                        } else if (response.stock_left <= 10) {
+                            message.html('<strong>Only ' + response.stock_left + ' left!</strong>');
+                        } else {
+                            message.html(''); // Clear the message if stock is above 10
+                        }
+                    }, 2000); // 2000 milliseconds = 2 seconds
+                },
+                error: function(response) {
+                    alert(response.responseJSON.error);
+                }
             });
         });
-    </script>
+    });
+</script>
     {% include 'chat_widget.html' %}
 </body>
 </html>

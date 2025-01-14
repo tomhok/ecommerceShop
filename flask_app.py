@@ -80,10 +80,8 @@ class Product(db.Model):
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     merchant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    # Add relationship to merchant
+    # Add relationships
     merchant = db.relationship('User', backref='products')
-
-    # Establish a relationship with the Review class
     reviews = db.relationship('Review', backref='product', lazy=True)
 
     def __repr__(self):
@@ -126,7 +124,7 @@ class Order(db.Model):
     total_amount = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    # Relationship to store order items
+    # Add relationships
     order_items = db.relationship('OrderItem', backref='order', lazy=True)
 
     def __repr__(self):
@@ -164,7 +162,6 @@ def is_valid_signature(x_hub_signature, data, private_key):
 # Routes
 @app.route('/')
 def index():
-    # Query all products from the database
     products = Product.query.all()
     return render_template('index.html', products=products)
 
@@ -175,7 +172,6 @@ def admin_dashboard():
         return redirect(url_for('login'))
 
     users = User.query.all()
-
     return render_template('admin_dashboard.html', users=users)
 
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
@@ -496,6 +492,13 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+@app.route('/cart')
+def cart():
+    cart = session.get('cart', {})
+    cart_items = [{'product': Product.query.get(pid), 'quantity': details['quantity']} for pid, details in cart.items()]
+    total_price = sum(item['product'].price * item['quantity'] for item in cart_items)
+    return render_template('cart.html', cart_items=cart_items, total_price=total_price)
+
 @app.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
     product = Product.query.get(product_id)
@@ -511,8 +514,6 @@ def add_to_cart(product_id):
     product_id_str = str(product_id)
     
     if product_id_str in cart:
-        if product.stock_count < (cart[product_id_str]['quantity'] + quantity):
-            return jsonify({'error': 'Not enough stock available!'}), 400
         cart[product_id_str]['quantity'] += quantity
     else:
         cart[product_id_str] = {
@@ -533,41 +534,35 @@ def add_to_cart(product_id):
         'stock_left': product.stock_count
     })
 
-@app.route('/cart')
-def cart():
-    cart = session.get('cart', {})
-    cart_items = [{'product': Product.query.get(pid), 'quantity': details['quantity']} for pid, details in cart.items()]
-    total_price = sum(item['product'].price * item['quantity'] for item in cart_items)
-    return render_template('cart.html', cart_items=cart_items, total_price=total_price)
-
 @app.route('/update_cart/<int:product_id>', methods=['POST'])
 def update_cart(product_id):
     try:
         quantity = int(request.form.get('quantity', 0))
         cart = session.get('cart', {})
         product_id_str = str(product_id)
-        
-        if quantity <= 0:
-            if product_id_str in cart:
-                del cart[product_id_str]
-        else:
+
+        if product_id_str in cart:
+            current_quantity = cart[product_id_str]['quantity']
             product = Product.query.get(product_id)
+
             if not product:
                 flash('Product not found!', 'error')
                 return redirect(url_for('cart'))
-                
-            # Check if requested quantity exceeds available stock
-            if product.stock_count < quantity:
-                flash(f'Only {product.stock_count} items available in stock!', 'error')
+
+            # Check if the new quantity exceeds available stock
+            if quantity > product.stock_count + current_quantity:
+                flash(f'Only {product.stock_count + current_quantity} items available in stock!', 'error')
                 return redirect(url_for('cart'))
-                
-            if product_id_str in cart:
-                cart[product_id_str]['quantity'] = quantity
+
+            # Update the stock count accordingly
+            product.stock_count += current_quantity - quantity  # Adjust stock count
+            cart[product_id_str]['quantity'] = quantity  # Update the cart quantity
 
         session['cart'] = cart
+        db.session.commit()  # Commit the changes to the database
         flash('Cart updated successfully!', 'success')
         return redirect(url_for('cart'))
-        
+
     except ValueError:
         flash('Invalid quantity!', 'error')
         return redirect(url_for('cart'))
@@ -575,9 +570,18 @@ def update_cart(product_id):
 @app.route('/remove_from_cart/<int:product_id>')
 def remove_from_cart(product_id):
     cart = session.get('cart', {})
+    
+    # Check if the product is in the cart
     if str(product_id) in cart:
-        del cart[str(product_id)]
-    session['cart'] = cart
+        product = Product.query.get(product_id)  # Get the product from the database
+        if product:
+            # Increase the stock count by the quantity in the cart
+            product.stock_count += cart[str(product_id)]['quantity']
+            db.session.commit()  # Commit the changes to the database
+        
+        del cart[str(product_id)]  # Remove the product from the cart
+    
+    session['cart'] = cart  # Update the session cart
     return redirect(url_for('cart'))
 
 @app.route('/checkout')

@@ -1,4 +1,5 @@
 ## Usage
+This is a simple e-commerce website built with Flask. It allows users to browse products, add them to their cart, and complete purchases. It also includes a chat feature for customers to communicate with merchants. This is part of the final project submission for Generation Singapore: Cloud Support and DevOps course.
 
 ### Customer
 - Register/login as a customer
